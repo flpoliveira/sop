@@ -1,4 +1,4 @@
-#include <pthread.h>
+//#include <pthread.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -18,10 +18,21 @@ typedef struct{
 Lanche *estoque;
 
 
+void *caixa()
+{
+
+}
+
+void *atendente()
+{
+
+}
+
+
 int main (int argc, char *argv[]){
 
     int c, contaLinhas= 0;
-    int nthread = atoi(argv[0]);
+    int nthread = atoi(argv[1]);
     char *nomeArquivo = argv[2]; // Recebe o nome do arquivo por parametro
 
 
@@ -42,15 +53,49 @@ int main (int argc, char *argv[]){
     for(i = 0; i < contaLinhas; i++)
     {
         fscanf(arq, "%s %d %d", ofertas[i].nome, &ofertas[i].preco, &ofertas[i].quantidade);
-        printf("%s\n", ofertas[i].nome);
+
     }
     estoque = ofertas;
+
+   // Pedido pedidos[nthread];
+    
 
 
     for(i = 0; i < nthread; i++)
     {
 
+        char nomeArqPedido[] = {'a', 'b', 'c', '-'};
+        itoa((i+1), nomeArqPedido+4, 10);
+        //strcat(nomeArqPedido, ".txt");
+        printf("%s\n", nomeArqPedido);
+        
+        if((arq = fopen(nomeArqPedido, "r")) == NULL)
+        {
+            perror("Erro: fopen");
+            exit(EXIT_FAILURE);
+        }
+        contaLinhas = 0;
+        while((c = fgetc(arq)) != EOF)
+        {
+            if(c == '\n')
+            {
+                contaLinhas++;
+                printf("Linha - %d\n", contaLinhas);
+            }
+            
+        }
+        Lanche lanchesDoPedido[contaLinhas];
+        rewind(arq);
+        for(int j = 0; j < contaLinhas; j++)
+        {
+            fscanf(arq, "%s %d", lanchesDoPedido[j].nome, &lanchesDoPedido[j].quantidade);
+            lanchesDoPedido[j].preco = 0;
+            printf("%s\n", lanchesDoPedido[j].nome);
+        }
+  //      pedidos[i].lanches = lanchesDoPedido;
+
     }
+
 
 
 
