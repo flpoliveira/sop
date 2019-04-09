@@ -31,9 +31,13 @@ void *atendente()
 
 int main (int argc, char *argv[]){
 
-    int c, contaLinhas= 0;
     int nthread = atoi(argv[1]);
     char *nomeArquivo = argv[2]; // Recebe o nome do arquivo por parametro
+
+    char auxNomeArquivo[100];
+    strcpy(auxNomeArquivo, nomeArquivo);
+    strcat(nomeArquivo, ".txt");
+    //printf("%s\n", nomeArquivo);
 
 
     FILE *arq;
@@ -42,59 +46,56 @@ int main (int argc, char *argv[]){
         perror("Erro: fopen");
         exit(EXIT_FAILURE);
     }
-    while((c = fgetc(arq)) != EOF)
-    {
-      if(c == '\n')
-        contaLinhas++;
-    }
-    Lanche ofertas[contaLinhas];
-    int i;
-    rewind(arq); //Volta o ponteiro pro inicio do Arquivo
-    for(i = 0; i < contaLinhas; i++)
-    {
-        fscanf(arq, "%s %d %d", ofertas[i].nome, &ofertas[i].preco, &ofertas[i].quantidade);
+    Lanche *ofertas;
+    ofertas = malloc(sizeof(Lanche));
 
+    int i = 1;
+
+    while(fscanf(arq, "%s %d %d", ofertas[i-1].nome, &ofertas[i-1].preco, &ofertas[i-1].quantidade) != EOF)
+    {
+      i++;
+      ofertas = realloc(ofertas, sizeof(Lanche) * i);
     }
+
     estoque = ofertas;
+    //printf("%s\n", estoque[2].nome);
 
-   // Pedido pedidos[nthread];
-    
+    Pedido pedidos[nthread];
 
 
-    for(i = 0; i < nthread; i++)
+
+    for(int j = 0; j < nthread; j++)
     {
+        char nomeArqPedido[100];
+        char auxConcatena[100];
+        strcpy(nomeArqPedido, auxNomeArquivo);
+        strcat(nomeArqPedido, "-");
+        snprintf(auxConcatena, 10, "%d", (j+1));
+        strcat(nomeArqPedido, auxConcatena);
+        strcat(nomeArqPedido, ".txt");
+        //printf("%s\n", nomeArqPedido);
 
-        char nomeArqPedido[] = {'a', 'b', 'c', '-'};
-        itoa((i+1), nomeArqPedido+4, 10);
-        //strcat(nomeArqPedido, ".txt");
-        printf("%s\n", nomeArqPedido);
-        
+
+        Lanche *lanchesDoPedido = malloc(sizeof(Lanche));
         if((arq = fopen(nomeArqPedido, "r")) == NULL)
         {
             perror("Erro: fopen");
             exit(EXIT_FAILURE);
         }
-        contaLinhas = 0;
-        while((c = fgetc(arq)) != EOF)
+
+        i = 1;
+        while(fscanf(arq, "%s %d %d", lanchesDoPedido[i-1].nome, &lanchesDoPedido[i-1].preco, &lanchesDoPedido[i-1].quantidade) != EOF)
         {
-            if(c == '\n')
-            {
-                contaLinhas++;
-                printf("Linha - %d\n", contaLinhas);
-            }
-            
+          i++;
+          lanchesDoPedido = realloc(lanchesDoPedido, sizeof(Lanche) * i);
         }
-        Lanche lanchesDoPedido[contaLinhas];
-        rewind(arq);
-        for(int j = 0; j < contaLinhas; j++)
-        {
-            fscanf(arq, "%s %d", lanchesDoPedido[j].nome, &lanchesDoPedido[j].quantidade);
-            lanchesDoPedido[j].preco = 0;
-            printf("%s\n", lanchesDoPedido[j].nome);
-        }
-  //      pedidos[i].lanches = lanchesDoPedido;
+
+      pedidos[j].lanches = lanchesDoPedido;
 
     }
+    printf("%s\n", pedidos[2].lanches[0].nome);
+
+
 
 
 

@@ -1,2 +1,1 @@
-caralho 6
-hue 3
+x-couve 6
