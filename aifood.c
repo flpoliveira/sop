@@ -1,4 +1,4 @@
-//#include <pthread.h>
+#include <pthread.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -16,17 +16,38 @@ typedef struct{
 
 
 Lanche *estoque;
+Lanche *pedidosBemSucedidos;
+pthread_mutex_t mtx = PTHREAD_MUTEX_INITIALIZER;
+pthread_barrier_t barreiraTodosProntos;
 
 
-void *caixa()
+
+
+void *atendente(void *argp)
 {
-
+  long id = (long) argp;
+  printf("hue\n");
+  pthread_barrier_wait(&barreiraTodosProntos);
+    printf("Pinto %ld\n", id);
 }
 
-void *atendente()
+void cria_threads(int nthread)
 {
-
+  int rc;
+  pthread_t threads[nthread];
+  for(long i = 0; i < nthread; i ++)
+  {
+    rc = pthread_create(&threads[i], NULL, (void *) atendente, (void *) i);
+  }
+  printf("AEAEA");
+  for(int i = 0; i < nthread; i ++)
+  {
+    rc = pthread_join(threads[i], NULL);
+  }
+  pthread_barrier_destroy(&barreiraTodosProntos);
 }
+
+
 
 
 int main (int argc, char *argv[]){
@@ -46,6 +67,7 @@ int main (int argc, char *argv[]){
         perror("Erro: fopen");
         exit(EXIT_FAILURE);
     }
+
     Lanche *ofertas;
     ofertas = malloc(sizeof(Lanche));
 
@@ -94,7 +116,7 @@ int main (int argc, char *argv[]){
 
     }
     printf("%s\n", pedidos[2].lanches[0].nome);
-
+    cria_threads(nthread);
 
 
 
