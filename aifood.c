@@ -1,54 +1,5 @@
-#include <pthread.h>
 #include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-//#include"biblioteca.h"
-
-typedef struct {
-  char nome[100];
-  int preco;
-  int quantidade;
-} Lanche;
-
-typedef struct{
-    Lanche *lanches;
-} Pedido;
-
-
-Lanche *estoque;
-Lanche *pedidosBemSucedidos;
-pthread_mutex_t mtx = PTHREAD_MUTEX_INITIALIZER;
-pthread_barrier_t barreiraTodosProntos;
-
-
-
-
-void *atendente(void *argp)
-{
-  long id = (long) argp;
-  printf("hue\n");
-  pthread_barrier_wait(&barreiraTodosProntos);
-    printf("Pinto %ld\n", id);
-}
-
-void cria_threads(int nthread)
-{
-  int rc;
-  pthread_t threads[nthread];
-  for(long i = 0; i < nthread; i ++)
-  {
-    rc = pthread_create(&threads[i], NULL, (void *) atendente, (void *) i);
-  }
-  printf("AEAEA");
-  for(int i = 0; i < nthread; i ++)
-  {
-    rc = pthread_join(threads[i], NULL);
-  }
-  pthread_barrier_destroy(&barreiraTodosProntos);
-}
-
-
-
+#include"biblioteca.h"
 
 int main (int argc, char *argv[]){
 
@@ -59,27 +10,12 @@ int main (int argc, char *argv[]){
     strcpy(auxNomeArquivo, nomeArquivo);
     strcat(nomeArquivo, ".txt");
     //printf("%s\n", nomeArquivo);
-
+    inicializar_ofertas(nomeArquivo);
+    int i = 0;
 
     FILE *arq;
-    if((arq = fopen(nomeArquivo, "r")) == NULL)
-    {
-        perror("Erro: fopen");
-        exit(EXIT_FAILURE);
-    }
 
-    Lanche *ofertas;
-    ofertas = malloc(sizeof(Lanche));
-
-    int i = 1;
-
-    while(fscanf(arq, "%s %d %d", ofertas[i-1].nome, &ofertas[i-1].preco, &ofertas[i-1].quantidade) != EOF)
-    {
-      i++;
-      ofertas = realloc(ofertas, sizeof(Lanche) * i);
-    }
-
-    estoque = ofertas;
+  //  estoque = ofertas;
     //printf("%s\n", estoque[2].nome);
 
     Pedido pedidos[nthread];
@@ -115,12 +51,16 @@ int main (int argc, char *argv[]){
       pedidos[j].lanches = lanchesDoPedido;
 
     }
-    printf("%s\n", pedidos[2].lanches[0].nome);
+    //printf("%s\n", pedidos[2].lanches[0].nome);
     cria_threads(nthread);
+    printList(listaOfertas);
+    char nomeLanche[] = "x-mondongo";
+    int x  = buscaLista(listaOfertas, nomeLanche);
+    Lanche ddd = popLista(&listaOfertas);
+    Lanche dde = popLista(&listaOfertas);
+    Lanche ddi = popLista(&listaOfertas);
 
-
-
-
-
+    printf("%s - %d - %d --> DDD || x = %d \n", ddi.nome, ddi.preco, ddi.quantidade, x);
+    printList(listaOfertas);
     return 0;
 }
