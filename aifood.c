@@ -1,8 +1,3 @@
-<<<<<<< HEAD
-=======
-#include <stdio.h>
->>>>>>> 383ae79807ec39a3af960499ef10f752a52bc21a
-
 #include"biblioteca.h"
 
 
@@ -18,23 +13,24 @@ int main (int argc, char *argv[]){
 
 
     inicializar_ofertas(nomeArquivo);
+    printf("----------------Estoque Inicio----------------\n");
+    printList(listaOfertas);
+    printf("----------------------------------------------\n");
     printf("--------------THREADS ATENDENTES--------------\n");
     cria_threads(nthread);
     printf("----------------------------------------------\n");
-    printList(listaOfertas);
+
     char nomeLanche[] = "x-mondongo";
-    int x  = buscaLista(listaOfertas, nomeLanche, 50);
-    Lanche ddd = popLista(&listaOfertas);
-    Lanche dde = popLista(&listaOfertas);
-    Lanche ddi = popLista(&listaOfertas);
-
-<<<<<<< HEAD
-
-    printf("%s - %d - %d --> DDD || x = %d \n", ddi.nome, ddi.preco, ddi.quantidade,x);
-=======
-    printf("%s - %d - %d --> DDD || x = %d \n", ddi.nome, ddi.preco, ddi.quantidade, x);
->>>>>>> 383ae79807ec39a3af960499ef10f752a52bc21a
-    printList(listaOfertas);
+    /*Lanche *ddd = popLista(&listaOfertas);
+    Lanche *dde = popLista(&listaOfertas);
+    Lanche *ddi = popLista(&listaOfertas);
+    Lanche *fodeu = popLista(&listaOfertas);
+    printf("%s - %d - %d --> DDD || x = %d \n", ddi->nome, ddi->preco, ddi->quantidade,x->sanduiche.preco);
+*/
+   printListaCaixa(listaCaixa);
+   printf("---------------Estoque Sobrando---------------\n");
+   printList(listaOfertas);
+   printf("----------------------------------------------\n");
 
     return 0;
 }
