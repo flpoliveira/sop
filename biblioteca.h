@@ -16,13 +16,7 @@ struct Node {
     struct Node* next;
     struct Node* prev;
 };
-typedef struct{
-    Lanche *lanches;
-} Pedido;
-
-Lanche *estoque;
-Lanche *pedidosBemSucedidos;
-
+char auxNomeArquivo[100];
 
 struct Node* listaOfertas = NULL;
 pthread_mutex_t mtx = PTHREAD_MUTEX_INITIALIZER;
@@ -35,15 +29,36 @@ void append(struct Node** head_ref, Lanche new_data);
 void printList(struct Node* node);
 void deleteNode(struct Node** head_ref, struct Node* del);
 Lanche popLista(struct Node** head_ref);
-int buscaLista(struct Node* node, char nomeLanche[]);
+int buscaLista(struct Node* node, char nomeLanche[], int quantidade);
 
 
 void *atendente(void *argp)
 {
   long id = (long) argp;
+  char nomeArqPedido[100];
+  char auxConcatena[100];
+  strcpy(nomeArqPedido, auxNomeArquivo);
+  snprintf(auxConcatena, 10, "%ld", (id));
+  strcat(nomeArqPedido, auxConcatena);
+  strcat(nomeArqPedido, ".txt");
+
+  struct Node* listaPedido = NULL;
+  FILE *arq;
+  if((arq = fopen(nomeArqPedido, "r")) == NULL)
+  {
+      perror("Erro: fopen");
+      exit(EXIT_FAILURE);
+  }
+  Lanche pedido;
+
+  while(fscanf(arq, "%s %d %d", pedido.nome, &pedido.preco, &pedido.quantidade) != EOF)
+  {
+    append(&listaPedido, pedido);
+  }
   pthread_barrier_wait(&barreiraTodosProntos);
   pthread_mutex_lock(&mtx);
-  printf("Pinto %ld\n", id);
+  printf("Pinto  %s - %ld\n", nomeArqPedido, id);
+  printList(listaPedido);
   pthread_mutex_unlock(&mtx);
 }
 
@@ -174,13 +189,21 @@ Lanche popLista(struct Node** head_ref)
   return aux;
 }
 
-int buscaLista(struct Node* node, char nomeLanche[])
+int buscaLista(struct Node* node, char nomeLanche[], int quantidade)
 {
   int x = 0;
   while (node != NULL)
   {
     if(strcmp(node->sanduiche.nome, nomeLanche) == 0)
-      x = 1;
+    {
+      if(quantidade <= node->sanduiche.quantidade)
+      {
+        node->sanduiche.quantidade = node->sanduiche.quantidade - quantidade;
+        x = 1;
+      }
+
+    }
+
     //printf("%s -> ", node->sanduiche.nome);
     node = node->next;
   }
