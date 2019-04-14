@@ -3,7 +3,7 @@
 #include <stdlib.h>
 #include <string.h>
 
-
+#define MAX 1000000000
 
 typedef struct {
   char nome[100];
@@ -20,18 +20,29 @@ struct Node {
 struct NoCaixa {
   int valor;
   long idAtendente;
-  int idPedido;
+  //int idPedido;
   struct NoCaixa * next;
   struct NoCaixa * prev;
 
 };
-char auxNomeArquivo[100];
 
+typedef struct{
+  long idAtendente;
+  int totalPedidos;
+  int valorTotal;
+} ProcessamentoCaixa;
+
+char auxNomeArquivo[100];
+ProcessamentoCaixa * relatorioFinanceiro;
 struct Node* listaOfertas = NULL;
 struct NoCaixa* listaCaixa = NULL;
 pthread_mutex_t mtxEstoque = PTHREAD_MUTEX_INITIALIZER;
 pthread_mutex_t mtxCaixa = PTHREAD_MUTEX_INITIALIZER;
 pthread_barrier_t barreiraTodosProntos;
+pthread_cond_t condCaixa;
+int tamanhoListaCaixa = 0;
+
+
 
 void *atendente(void *argp);
 void cria_threads(int nthread);
@@ -43,7 +54,7 @@ Lanche * popLista(struct Node** head_ref);
 void appendNoCaixa(struct NoCaixa** head_ref, long idAtendente, int valor);
 struct Node * buscaLista(struct Node* node, char nomeLanche[], int quantidade);
 int retira_lanches_estoque(struct Node* node, int quantidade);
-
+struct NoCaixa  * popListaCaixa(struct NoCaixa** head_ref);
 
 void *atendente(void *argp)
 {
@@ -86,6 +97,8 @@ void *atendente(void *argp)
       pthread_mutex_lock(&mtxCaixa);
         printf("valor %d do pedido pela Thread %ld\n", valor, id);
         appendNoCaixa(&listaCaixa, id, valor);
+        tamanhoListaCaixa++;
+        pthread_cond_signal(&condCaixa);
       pthread_mutex_unlock(&mtxCaixa);
     }
 
@@ -97,22 +110,49 @@ void *atendente(void *argp)
   printList(listaPedido);
 
 }
+void *caixa(void *argp)
+{
+  ProcessamentoCaixa atendentes[(long) argp];
+  pthread_barrier_wait(&barreiraTodosProntos);
 
+
+
+    pthread_mutex_lock(&mtxCaixa);
+    while(tamanhoListaCaixa == 0)
+      pthread_cond_wait(&condCaixa, &mtxCaixa);
+    tamanhoListaCaixa--;
+
+  /*struct NoCaixa * no = popListaCaixa(&listaCaixa);
+  if(no != NULL)
+  {
+      printf("NoNaoNulo");
+  }*/
+
+    pthread_mutex_unlock(&mtxCaixa);
+
+}
 
 void cria_threads(int nthread)
 {
-  pthread_barrier_init(&barreiraTodosProntos,NULL,nthread);
+  pthread_barrier_init(&barreiraTodosProntos,NULL,(nthread+1));
   int rc;
-  pthread_t threads[nthread];
+  pthread_t threads[nthread+1];
+
+
+  rc = pthread_create(&threads[nthread], NULL, (void *) caixa, (void *) (long)nthread);
   for(long i = 0; i < nthread; i ++)
   {
     rc = pthread_create(&threads[i], NULL, (void *) atendente, (void *) (i+1));
   }
-  for(int i = 0; i < nthread; i ++)
+
+  for(int i = 0; i <= nthread; i ++)
   {
     //printf("%i\n", i);
     rc = pthread_join(threads[i], NULL);
   }
+
+
+
   pthread_barrier_destroy(&barreiraTodosProntos);
 }
 
@@ -188,7 +228,7 @@ void appendNoCaixa(struct NoCaixa** head_ref, long idAtendente, int valor)
           node as head */
     if (*head_ref == NULL) {
         new_node->prev = NULL;
-        new_node->idPedido = 1;
+        //new_node->idPedido = 1;
         *head_ref = new_node;
         return;
     }
@@ -203,7 +243,7 @@ void appendNoCaixa(struct NoCaixa** head_ref, long idAtendente, int valor)
 
     /* 7. Make last node as previous of new node */
     new_node->prev = last;
-    new_node->idPedido = new_node->prev->idPedido + 1;
+    //new_node->idPedido = new_node->prev->idPedido + 1;
 
     return;
 }
@@ -232,7 +272,7 @@ void printListaCaixa(struct NoCaixa * node)
   struct NoCaixa* last;
     while (node != NULL) {
       printf(" Lista Caixa: %ld ", node->idAtendente);
-      printf(" - idPedido: %d - valor: %d", node->idPedido, node->valor);
+      printf(" valor: %d", node->valor);
       last = node;
       node = node->next;
       printf("\n");
@@ -261,7 +301,29 @@ void deleteNode(struct Node** head_ref, struct Node* del)
     /* Finally, free the memory occupied by del*/
     free(del);
 }
+void deleteNoCaixa(struct NoCaixa** head_ref, struct NoCaixa* del)
+{
+    /* base case */
+    if (*head_ref == NULL || del == NULL)
+        return;
 
+    /* If node to be deleted is head node */
+    if (*head_ref == del)
+        *head_ref = del->next;
+
+    /* Change next only if node to be deleted
+       is NOT the last node */
+    if (del->next != NULL)
+        del->next->prev = del->prev;
+
+    /* Change prev only if node to be deleted
+       is NOT the first node */
+    if (del->prev != NULL)
+        del->prev->next = del->next;
+
+    /* Finally, free the memory occupied by del*/
+    free(del);
+}
 Lanche  * popLista(struct Node** head_ref)
 {
   Lanche * aux = NULL;
@@ -284,6 +346,28 @@ Lanche  * popLista(struct Node** head_ref)
   }
 
   return aux;
+
+}
+
+struct NoCaixa  * popListaCaixa(struct NoCaixa** head_ref)
+{
+
+  if(*head_ref != NULL)
+  {
+
+    struct NoCaixa* current = *head_ref;
+
+
+    while(current->prev != NULL)
+    {
+      current = current->prev;
+    }
+
+
+    deleteNoCaixa(head_ref, current);
+  }
+
+  return NULL;
 
 }
 
