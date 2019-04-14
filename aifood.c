@@ -21,6 +21,9 @@ struct Node {
 typedef struct{
     Lanche *lanches;
 } Pedido;
+
+struct Node* listaOfertas = NULL;
+
 void append(struct Node** head_ref, Lanche new_data)
 {
     //printf("%s - append\n", new_data.nome);
@@ -115,7 +118,18 @@ Lanche popLista(struct Node** head_ref)
   return aux;
 }
 
-
+int buscaLista(struct Node* node, char nomeLanche[])
+{
+  int x = 0;
+  while (node != NULL)
+  {
+    if(strcmp(node->sanduiche.nome, nomeLanche) == 0)
+      x = 1;
+    //printf("%s -> ", node->sanduiche.nome);
+    node = node->next;
+  }
+  return x;
+}
 Lanche *estoque;
 Lanche *pedidosBemSucedidos;
 pthread_mutex_t mtx = PTHREAD_MUTEX_INITIALIZER;
@@ -165,7 +179,7 @@ int main (int argc, char *argv[]){
     strcat(nomeArquivo, ".txt");
     //printf("%s\n", nomeArquivo);
 
-
+    int i = 0;
     FILE *arq;
     if((arq = fopen(nomeArquivo, "r")) == NULL)
     {
@@ -173,19 +187,16 @@ int main (int argc, char *argv[]){
         exit(EXIT_FAILURE);
     }
 
-    Lanche *ofertas;
-    ofertas = malloc(sizeof(Lanche));
-    struct Node* head = NULL;
-    int i = 1;
-    while(fscanf(arq, "%s %d %d", ofertas[i-1].nome, &ofertas[i-1].preco, &ofertas[i-1].quantidade) != EOF)
+    Lanche ofertas;
+
+    while(fscanf(arq, "%s %d %d", ofertas.nome, &ofertas.preco, &ofertas.quantidade) != EOF)
     {
 
       //printf("%s\n", ofertas[i-1].nome);
-      append(&head, ofertas[i-1]);
-      i++;
-      ofertas = realloc(ofertas, sizeof(Lanche) * i);
+      append(&listaOfertas, ofertas);
+      //ofertas = realloc(ofertas, sizeof(Lanche) * i);
     }
-    estoque = ofertas;
+  //  estoque = ofertas;
     //printf("%s\n", estoque[2].nome);
 
     Pedido pedidos[nthread];
@@ -223,12 +234,17 @@ int main (int argc, char *argv[]){
     }
     //printf("%s\n", pedidos[2].lanches[0].nome);
     cria_threads(nthread);
-    printList(head);
-    Lanche ddd = popLista(&head);
-    Lanche dde = popLista(&head);
-    Lanche ddi = popLista(&head);
-    printf("%s - %d - %d --> DDD \n", ddi.nome, ddi.preco, ddi.quantidade);
-    printList(head);
+    printList(listaOfertas);
+    char nomeLanche[] = "x-mondongo";
+    int x  = buscaLista(listaOfertas, nomeLanche);
+    Lanche ddd = popLista(&listaOfertas);
+    Lanche dde = popLista(&listaOfertas);
+    Lanche ddi = popLista(&listaOfertas);
+
+
+
+    printf("%s - %d - %d --> DDD || x = %d \n", ddi.nome, ddi.preco, ddi.quantidade, x);
+    printList(listaOfertas);
 
 
 
