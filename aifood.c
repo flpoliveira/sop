@@ -26,22 +26,26 @@ pthread_barrier_t barreiraTodosProntos;
 void *atendente(void *argp)
 {
   long id = (long) argp;
-  printf("hue\n");
   pthread_barrier_wait(&barreiraTodosProntos);
-    printf("Pinto %ld\n", id);
+  pthread_mutex_lock(&mtx);
+  printf("Pinto %ld\n", id);
+  pthread_mutex_unlock(&mtx);
+
+
 }
 
 void cria_threads(int nthread)
 {
+  pthread_barrier_init(&barreiraTodosProntos,NULL,nthread);
   int rc;
   pthread_t threads[nthread];
   for(long i = 0; i < nthread; i ++)
   {
-    rc = pthread_create(&threads[i], NULL, (void *) atendente, (void *) i);
+    rc = pthread_create(&threads[i], NULL, (void *) atendente, (void *) (i+1));
   }
-  printf("AEAEA");
   for(int i = 0; i < nthread; i ++)
   {
+    //printf("%i\n", i);
     rc = pthread_join(threads[i], NULL);
   }
   pthread_barrier_destroy(&barreiraTodosProntos);
