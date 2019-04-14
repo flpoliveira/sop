@@ -1,5 +1,7 @@
 #include <stdio.h>
+
 #include"biblioteca.h"
+
 
 int main (int argc, char *argv[]){
 
@@ -62,5 +64,6 @@ int main (int argc, char *argv[]){
 
     printf("%s - %d - %d --> DDD || x = %d \n", ddi.nome, ddi.preco, ddi.quantidade, x);
     printList(listaOfertas);
+
     return 0;
 }
