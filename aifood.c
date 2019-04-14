@@ -166,7 +166,22 @@ void cria_threads(int nthread)
   pthread_barrier_destroy(&barreiraTodosProntos);
 }
 
+void inicializar_ofertas(char nomeArquivo[])
+{
+  FILE *arq;
+  if((arq = fopen(nomeArquivo, "r")) == NULL)
+  {
+      perror("Erro: fopen");
+      exit(EXIT_FAILURE);
+  }
+  Lanche ofertas;
 
+  while(fscanf(arq, "%s %d %d", ofertas.nome, &ofertas.preco, &ofertas.quantidade) != EOF)
+  {
+
+    append(&listaOfertas, ofertas);
+  }
+}
 
 
 int main (int argc, char *argv[]){
@@ -178,24 +193,11 @@ int main (int argc, char *argv[]){
     strcpy(auxNomeArquivo, nomeArquivo);
     strcat(nomeArquivo, ".txt");
     //printf("%s\n", nomeArquivo);
-
+    inicializar_ofertas(nomeArquivo);
     int i = 0;
+
     FILE *arq;
-    if((arq = fopen(nomeArquivo, "r")) == NULL)
-    {
-        perror("Erro: fopen");
-        exit(EXIT_FAILURE);
-    }
 
-    Lanche ofertas;
-
-    while(fscanf(arq, "%s %d %d", ofertas.nome, &ofertas.preco, &ofertas.quantidade) != EOF)
-    {
-
-      //printf("%s\n", ofertas[i-1].nome);
-      append(&listaOfertas, ofertas);
-      //ofertas = realloc(ofertas, sizeof(Lanche) * i);
-    }
   //  estoque = ofertas;
     //printf("%s\n", estoque[2].nome);
 
