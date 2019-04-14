@@ -77,6 +77,45 @@ void printList(struct Node* node)
     }*/
 }
 
+void deleteNode(struct Node** head_ref, struct Node* del)
+{
+    /* base case */
+    if (*head_ref == NULL || del == NULL)
+        return;
+
+    /* If node to be deleted is head node */
+    if (*head_ref == del)
+        *head_ref = del->next;
+
+    /* Change next only if node to be deleted
+       is NOT the last node */
+    if (del->next != NULL)
+        del->next->prev = del->prev;
+
+    /* Change prev only if node to be deleted
+       is NOT the first node */
+    if (del->prev != NULL)
+        del->prev->next = del->next;
+
+    /* Finally, free the memory occupied by del*/
+    free(del);
+}
+
+Lanche popLista(struct Node** head_ref)
+{
+  struct Node* current = *head_ref;
+  Lanche aux;
+  while(current->prev != NULL)
+  {
+    current = current->prev;
+  }
+  aux = current->sanduiche;
+  deleteNode(head_ref, current);
+
+  return aux;
+}
+
+
 Lanche *estoque;
 Lanche *pedidosBemSucedidos;
 pthread_mutex_t mtx = PTHREAD_MUTEX_INITIALIZER;
@@ -184,12 +223,11 @@ int main (int argc, char *argv[]){
     }
     //printf("%s\n", pedidos[2].lanches[0].nome);
     cria_threads(nthread);
-
-
-
-
-
-
+    printList(head);
+    Lanche ddd = popLista(&head);
+    Lanche dde = popLista(&head);
+    Lanche ddi = popLista(&head);
+    printf("%s - %d - %d --> DDD \n", ddi.nome, ddi.preco, ddi.quantidade);
     printList(head);
 
 
