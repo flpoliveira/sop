@@ -23,7 +23,7 @@ typedef struct{
 } Pedido;
 void append(struct Node** head_ref, Lanche new_data)
 {
-  printf("AIDS 1\n");
+    //printf("%s - append\n", new_data.nome);
     /* 1. allocate node */
     struct Node* new_node = (struct Node*)malloc(sizeof(struct Node));
 
@@ -31,7 +31,7 @@ void append(struct Node** head_ref, Lanche new_data)
 
     /* 2. put in the data  */
     new_node->sanduiche = new_data;
-    printf("%d ----\n", new_node->sanduiche.preco);
+
     /* 3. This new node is going to be the last node, so
           make next of it as NULL*/
     new_node->next = NULL;
@@ -43,7 +43,7 @@ void append(struct Node** head_ref, Lanche new_data)
         *head_ref = new_node;
         return;
     }
-printf("AIDS 3\n");
+
     /* 5. Else traverse till the last node */
     while (last->next != NULL)
         last = last->next;
@@ -53,7 +53,7 @@ printf("AIDS 3\n");
 
     /* 7. Make last node as previous of new node */
     new_node->prev = last;
-printf("AIDS 2\n");
+
     return;
 }
 
@@ -62,18 +62,19 @@ void printList(struct Node* node)
 {
 
     struct Node* last;
-    printf("\nTraversal in forward direction \n");
     while (node != NULL) {
-        printf(" %s ", node->sanduiche.nome);
+        printf(" Lista : %s ", node->sanduiche.nome);
+        printf(" - preco: %d - quantidade %d", node->sanduiche.preco, node->sanduiche.quantidade);
         last = node;
         node = node->next;
+        printf("\n");
     }
 
-    printf("\nTraversal in reverse direction \n");
+    /*printf("\nTraversal in reverse direction \n");
     while (last != NULL) {
         printf(" %s ", node->sanduiche.nome);
         last = last->prev;
-    }
+    }*/
 }
 
 Lanche *estoque;
@@ -135,16 +136,16 @@ int main (int argc, char *argv[]){
 
     Lanche *ofertas;
     ofertas = malloc(sizeof(Lanche));
-
-    int i = 1;
     struct Node* head = NULL;
+    int i = 1;
     while(fscanf(arq, "%s %d %d", ofertas[i-1].nome, &ofertas[i-1].preco, &ofertas[i-1].quantidade) != EOF)
     {
-      i++;
+
+      //printf("%s\n", ofertas[i-1].nome);
       append(&head, ofertas[i-1]);
+      i++;
       ofertas = realloc(ofertas, sizeof(Lanche) * i);
     }
-    printList(head);
     estoque = ofertas;
     //printf("%s\n", estoque[2].nome);
 
@@ -181,13 +182,15 @@ int main (int argc, char *argv[]){
       pedidos[j].lanches = lanchesDoPedido;
 
     }
-    printf("%s\n", pedidos[2].lanches[0].nome);
+    //printf("%s\n", pedidos[2].lanches[0].nome);
     cria_threads(nthread);
 
 
 
 
 
+
+    printList(head);
 
 
 
