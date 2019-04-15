@@ -55,7 +55,11 @@ void * atendente(void *argp)
     }
     pthread_mutex_unlock(&mtxEstoque);
   }
+  pthread_mutex_lock(&mtxCaixa);
   fimAtendentes--;
+  pthread_cond_signal(&condCaixa);
+  pthread_mutex_unlock(&mtxCaixa);
+  //printf("%ld - %d \n", id, fimAtendentes);
   pthread_exit(NULL);
 }
 void * caixa(void *argp)
@@ -66,9 +70,9 @@ void * caixa(void *argp)
   {
     //printf("Caixa processa... fimAtendentes = %d\n", fimAtendentes);
     pthread_mutex_lock(&mtxCaixa);
-    if(tamanhoListaCaixa == 0)
+    if(tamanhoListaCaixa == 0 && fimAtendentes > 0)
     {
-      //printf("Caixa esperando Atendente, tamanhodaLista = %i\n", tamanhoListaCaixa);
+      //printf("Caixa esperando Atendente, tamanhodaLista = %i, fimAtendentes = %d\n", tamanhoListaCaixa, fimAtendentes);
       pthread_cond_wait(&condCaixa, &mtxCaixa);
     }
 
@@ -84,7 +88,7 @@ void * caixa(void *argp)
       }
     pthread_mutex_unlock(&mtxCaixa);
   }
-  printf("tamanhoListaCaixa -> %d\n", tamanhoListaCaixa);
+  //printf("tamanhoListaCaixa -> %d\n", tamanhoListaCaixa);
   pthread_exit(NULL);
 }
 void inicializa_lanches(FILE * arq_ofertas)
