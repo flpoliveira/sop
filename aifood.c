@@ -6,7 +6,7 @@ pthread_barrier_t barreiraTodosProntos;
 pthread_mutex_t mtxEstoque = PTHREAD_MUTEX_INITIALIZER;
 pthread_mutex_t mtxCaixa = PTHREAD_MUTEX_INITIALIZER;
 pthread_cond_t condCaixa;
-int * fimAtendentes;
+int fimAtendentes = 0;
 
 void * atendente(void *argp)
 {
@@ -50,62 +50,39 @@ void * atendente(void *argp)
     pthread_mutex_unlock(&mtxEstoque);
   }
   pthread_mutex_lock(&mtxCaixa);
-  fimAtendentes[(int)(id-1)] = 1;
+  fimAtendentes--;
   pthread_mutex_unlock(&mtxCaixa);
-  printf("%d -> %d 0-0\n", (int)(id-1), fimAtendentes[(int)(id-1)]);
   pthread_exit(NULL);
 }
 void * caixa(void *argp)
 {
-
-
   printf("Caixa criado.\n");
   pthread_barrier_wait(&barreiraTodosProntos);
-  while(1)
+  while(fimAtendentes > 0)
   {
-
-    printf("Caixa processa...\n");
+    printf("Caixa processa... fimAtendentes = %d\n", fimAtendentes);
     pthread_mutex_lock(&mtxCaixa);
-    int k = 0;
-      for(int i = 0; i < 2; i++)
-      {
-        if(fimAtendentes[i] == 0)
-        {
-          printf("fimAtendentes -> %d, %d\n", (i+1), fimAtendentes[i]);
-          k = 1;
-          break;
-        }
-      }
-      if(k == 0)
-      {
-        break;
-      }
-
-    while(tamanhoListaCaixa == 0)
+    if(tamanhoListaCaixa == 0)
     {
       printf("Caixa esperando Atendente, tamanhodaLista = %i\n", tamanhoListaCaixa);
       pthread_cond_wait(&condCaixa, &mtxCaixa);
-
     }
 
       Pedido * aux = popLista(&listaCaixa);
-      if(aux != NULL)
+      while(aux != NULL)
       {
-        if(buscaListaIncrementaValor(listaPedidoBemSucedidos, *aux) == 0)
-          appendCaixa(&listaPedidoBemSucedidos, aux->idAtendente, aux->preco);
+
+        if(buscaListaIncrementaValor(listaPedidosProcessados, *aux) == 0)
+        {
+          appendCaixa(&listaPedidosProcessados, aux->idAtendente, aux->preco);
+
+        }
+        aux = popLista(&listaCaixa);
+
+
       }
-
-    /*while(aux != NULL)
-    {*/
-    //}
-
     pthread_mutex_unlock(&mtxCaixa);
-
-
-
-
   }
-  printListCaixa(listaCaixa);
   pthread_exit(NULL);
 }
 void inicializa_lanches(FILE * arq_ofertas)
@@ -122,9 +99,7 @@ void cria_threads(int nthread)
   pthread_cond_init(&condCaixa, NULL);
   int rc;
   pthread_t threads[nthread+1];
-  int vet[nthread];
-  for(int j = 0; j < nthread; j++) vet[j] = 0;
-  fimAtendentes = vet;
+  fimAtendentes = nthread;
 
   rc = pthread_create(&threads[nthread], NULL, (void *) caixa, NULL);
   if(rc != 0)
@@ -168,8 +143,8 @@ int main(int argc, char *argv[])
   printf("--------------------Lista de Pedidos Que Deu Ruim--------------------\n");
   printListCaixa(listaCaixa);
   printf("------------------------------------------------------------------\n");
-  printf("--------------------Lista de Pedidos Sucedidos--------------------\n");
-  printListCaixa(listaPedidoBemSucedidos);
+  printf("--------------------Lista de Pedidos Processados--------------------\n");
+  printListCaixa(listaPedidosProcessados);
   printf("------------------------------------------------------------------\n");
   printf("-----------------Estoque Inicio-------------------------------\n");
   printList(listaOfertas, LISTA_INICIO);

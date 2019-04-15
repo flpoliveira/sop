@@ -41,7 +41,7 @@ struct NoCaixa{
 
 struct No * listaOfertas = NULL;
 struct NoCaixa * listaCaixa = NULL;
-struct NoCaixa * listaPedidoBemSucedidos = NULL;
+struct NoCaixa * listaPedidosProcessados = NULL;
 int tamanhoListaCaixa = 0;
 void append(struct No ** head_ref, Lanche novoLanche);
 void printList(struct No * node, int x);
@@ -251,6 +251,7 @@ int buscaListaIncrementaValor(struct NoCaixa * node, Pedido x)
       node->pedido.preco += x.preco;
       return 1;
     }
+    node = node->next;
   }
   return 0;
 }
