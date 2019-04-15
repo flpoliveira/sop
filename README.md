@@ -45,6 +45,8 @@
 
 Compilando o codigo
 
-gcc -c aifood.c -o aifood.o
-gcc -c ESTRUTURAS.c -o ESTRUTURAS.o
-gcc aifood.o ESTRUTURAS.o -o aifood
+gcc -pthread aifood.c -o aifood
+
+Executando
+
+./aifood 2 a
