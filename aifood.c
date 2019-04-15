@@ -36,11 +36,11 @@ void * atendente(void *argp)
     int aux = eh_possivel_processar_pedido(listaOfertas, sanduiche.nome, sanduiche.quantidade);
     if(aux == NOME_NAO_ENCONTRADO)
     {
-      //printf("O Atendente %ld nao encontrou lanche '%s' no estoque, pedido cancelado.\n", id, sanduiche.nome);
+      printf("O Atendente %ld nao encontrou lanche '%s' no estoque, pedido cancelado.\n", id, sanduiche.nome);
     }
     else if(aux == QUANTIDADE_INSUFICIENTE)
     {
-      //printf("O Atendente %ld encontrou o lanche '%s', porem a quantidade em estoque eh insuficiente, pedido cancelado.\n", id, sanduiche.nome);
+      printf("O Atendente %ld encontrou o lanche '%s', porem a quantidade em estoque eh insuficiente, pedido cancelado.\n", id, sanduiche.nome);
     }
     else if(aux == EH_POSSIVEL)
     {
