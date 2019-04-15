@@ -42,6 +42,7 @@ Por fim, foi utilizado uma variavel condicional para que os atendentes sinalizas
   * Sai da thread com retorno NULL
 
 <h3>Thread caixa</h3>
+
 * A thread Caixa assim como a atendente eh criada na Cria_Threads().
 * Ela nao recebe parametro nenhum
 * Ela nao retorna nada
