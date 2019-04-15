@@ -42,7 +42,7 @@ void * atendente(void *argp)
 
         unsigned int valor = retira_lanches_estoque(listaOfertas, sanduiche.nome , sanduiche.quantidade);
         pthread_mutex_lock(&mtxCaixa);
-        appendCaixa(&listaCaixa, id, valor, sanduiche.quantidade);
+        appendCaixa(&listaCaixa, id, valor);
         pthread_cond_signal(&condCaixa);
         pthread_mutex_unlock(&mtxCaixa);
 
@@ -57,6 +57,7 @@ void * atendente(void *argp)
 }
 void * caixa(void *argp)
 {
+
 
   printf("Caixa criado.\n");
   pthread_barrier_wait(&barreiraTodosProntos);
@@ -88,9 +89,14 @@ void * caixa(void *argp)
     }
 
       Pedido * aux = popLista(&listaCaixa);
+      if(aux != NULL)
+      {
+        if(buscaListaIncrementaValor(listaPedidoBemSucedidos, *aux) == 0)
+          appendCaixa(&listaPedidoBemSucedidos, aux->idAtendente, aux->preco);
+      }
+
     /*while(aux != NULL)
     {*/
-      aux = popLista(&listaCaixa);
     //}
 
     pthread_mutex_unlock(&mtxCaixa);
@@ -99,7 +105,7 @@ void * caixa(void *argp)
 
 
   }
-
+  printListCaixa(listaCaixa);
   pthread_exit(NULL);
 }
 void inicializa_lanches(FILE * arq_ofertas)
@@ -159,8 +165,11 @@ int main(int argc, char *argv[])
   printf("--------------------THREADS--------------------\n");
   cria_threads(nthread);
   printf("-----------------------------------------------\n");
-  printf("--------------------Lista de Pedidos Sucedidos--------------------\n");
+  printf("--------------------Lista de Pedidos Que Deu Ruim--------------------\n");
   printListCaixa(listaCaixa);
+  printf("------------------------------------------------------------------\n");
+  printf("--------------------Lista de Pedidos Sucedidos--------------------\n");
+  printListCaixa(listaPedidoBemSucedidos);
   printf("------------------------------------------------------------------\n");
   printf("-----------------Estoque Inicio-------------------------------\n");
   printList(listaOfertas, LISTA_INICIO);
