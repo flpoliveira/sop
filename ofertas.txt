@@ -1,3 +1,0 @@
-x-couve 10 40
-x-bagre 12 50
-x-mondongo 16 50

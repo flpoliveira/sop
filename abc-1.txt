@@ -1,3 +1,0 @@
-x-couve 4
-x-baiacu 2
-x-mondongo 3
