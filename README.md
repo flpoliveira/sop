@@ -1,10 +1,10 @@
 
-#Controle de concorrencia
+<h3>Controle de concorrencia</h3>
 Para fazer o controle foi utilizado neste projeto, dois mutexes, para o controle de duas Regioes Critica, uma eh a lista de lanches em Estoque (listaOfertas -> a relacao de lanches no arquivo de ofertas) e outra  lista de pedidos a serem processados pelo caixa (listaCaixa -> Corresponde aos pedidos ainda nao processados).
 Alem disso, foi utilizado uma barreira para a garantia de que todas as Threads, tanto a de caixa quanto os atendentes estejam prontas (barreiraTodosProntos).
 Por fim, foi utilizado uma variavel condicional para que os atendentes sinalizassem o caixa toda vez que inserirem algo novo a lista de pedidos que precisam ser processados, e tambem ao final de sua execucao para a garantia de que o caixa nao esteja dormindo e um inteiro representando o numero de thread de Atendentes que faltam terminar seus trabalhos, assim o caixa sabe que deve repetir suas execucoes enquanto tiver um atendente trabalhando (fimAtendentes).
 
-#Threads Atendentes
+<h3>Threads Atendentes</h3>
 * A thread atendente eh criada na Cria_Threads()
 * Ela recebe um parametro que eh o seu id e nao retorna nada
 * Quando executada ela faz as seguintes acoes:
@@ -39,7 +39,7 @@ Por fim, foi utilizado uma variavel condicional para que os atendentes sinalizas
   * #Fim DO XGH
   * Sai da thread com retorno NULL
 
-#Thread caixa
+<h3>Thread caixa</h3>
 * A thread Caixa assim como a atendente eh criada na Cria_Threads()
 * Ela nao recebe parametro nenhum
 * Ela nao retorna nada
@@ -60,10 +60,10 @@ Por fim, foi utilizado uma variavel condicional para que os atendentes sinalizas
   * Entao, a thread retorna NULL caso todos os atendentes tenham terminado seu trabalho e a ListaDeCaixa esteja vazia.
 
 
-#Compilando o codigo
+<h3>Compilando o codigo</h3>
 
 gcc -pthread aifood.c -o aifood
 
-#Executando
+<h3>Executando</h3>
 
 ./aifood 2 a
