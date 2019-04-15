@@ -6,13 +6,11 @@ Alem disso, foi utilizado uma barreira para a garantia de que todas as Threads, 
 Por fim, foi utilizado uma variavel condicional para que os atendentes sinalizassem o caixa toda vez que inserirem algo novo a lista de pedidos que precisam ser processados, e tambem ao final de sua execucao para a garantia de que o caixa nao esteja dormindo e um inteiro representando o numero de thread de Atendentes que faltam terminar seus trabalhos, assim o caixa sabe que deve repetir suas execucoes enquanto tiver um atendente trabalhando (fimAtendentes). </p>
 
 <h3>Threads Atendentes</h3>
-* A thread atendente eh criada na Cria_Threads()
 
+* A thread atendente eh criada na Cria_Threads().
 * Ela recebe um parametro que eh o seu id e nao retorna nada
-
 * Quando executada ela faz as seguintes acoes:
     * Criar uma string com o nome do arquivo do pedido da qual ela precisa ler (nomeArquivo-idThread)
-    
   * Ela abre o arquivo e o atribui a um ponteiro do tipo File
   * Fica presa no espera_barreira(), ate que todas as outras threads estejam no mesmo ponto
   * Apos a barreira ser destruida, ela le linha por linha do arquivo ate o seu fim (EOF)
