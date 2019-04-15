@@ -41,6 +41,7 @@ struct NoCaixa{
 
 struct No * listaOfertas = NULL;
 struct NoCaixa * listaCaixa = NULL;
+int tamanhoListaCaixa = 0;
 void append(struct No ** head_ref, Lanche novoLanche);
 void printList(struct No * node, int x);
 void deleteNode(struct No** head_ref, struct No * del);
@@ -48,7 +49,7 @@ int eh_possivel_processar_pedido(struct No* node, char nomeLanche[], unsigned in
 unsigned int retira_lanches_estoque(struct No * node, char nomeLanche[],unsigned int quantidade);
 void appendCaixa(struct NoCaixa** head_ref, long idAtendente, unsigned int valor, unsigned int quantidade);
 void printListCaixa(struct NoCaixa *node);
-
+Pedido * popLista(struct NoCaixa ** head_ref);
 void append(struct No ** head_ref, Lanche novoLanche)
 {
     struct No* new_node = ( struct No*)malloc(sizeof(struct No));
@@ -176,6 +177,7 @@ unsigned int retira_lanches_estoque(struct No * node, char nomeLanche[] , unsign
 
 void appendCaixa(struct NoCaixa** head_ref, long idAtendente, unsigned int valor, unsigned int quantidade)
 {
+    tamanhoListaCaixa++;
     Pedido aux;
     aux.idAtendente = idAtendente;
     aux.preco = valor;
@@ -213,7 +215,26 @@ void printListCaixa(struct NoCaixa *node)
 {
   while (node != NULL)
   {
-     printf("ListaCaixa: %ld - %u - %u \n", node->pedido.idAtendente, node->pedido.preco, node->pedido.quantidade);
+     printf("ListaCaixa: Atendente : %ld -  valorTotal : %u - quantidade : %u \n", node->pedido.idAtendente, node->pedido.preco, node->pedido.quantidade);
      node = node->next;
   }
+}
+
+Pedido * popLista(struct NoCaixa ** head_ref)
+{
+
+  Pedido * aux = NULL;
+  if(*head_ref != NULL)
+  {
+    tamanhoListaCaixa--;
+    struct NoCaixa* current = *head_ref;
+
+    aux = malloc(sizeof(Pedido));
+    *aux = current->pedido;
+
+    *head_ref = current->next;   // Change head
+    free(current);
+  }
+
+  return aux;
 }

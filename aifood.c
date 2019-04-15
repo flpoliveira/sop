@@ -4,6 +4,9 @@
 char auxNomeArquivo[100];
 pthread_barrier_t barreiraTodosProntos;
 pthread_mutex_t mtxEstoque = PTHREAD_MUTEX_INITIALIZER;
+pthread_mutex_t mtxCaixa = PTHREAD_MUTEX_INITIALIZER;
+pthread_cond_t condCaixa;
+int * fimAtendentes;
 
 void * atendente(void *argp)
 {
@@ -38,17 +41,64 @@ void * atendente(void *argp)
       printf("O Atendente %ld encontrou o lanche '%s' e a quantidade em estoque eh suficiente, pedido sendo atendido.\n", id, sanduiche.nome);
 
         unsigned int valor = retira_lanches_estoque(listaOfertas, sanduiche.nome , sanduiche.quantidade);
+        pthread_mutex_lock(&mtxCaixa);
         appendCaixa(&listaCaixa, id, valor, sanduiche.quantidade);
+        pthread_cond_signal(&condCaixa);
+        pthread_mutex_unlock(&mtxCaixa);
 
     }
     pthread_mutex_unlock(&mtxEstoque);
   }
+  pthread_mutex_lock(&mtxCaixa);
+  fimAtendentes[(int)(id-1)] = 1;
+  pthread_mutex_unlock(&mtxCaixa);
+  printf("%d -> %d 0-0\n", (int)(id-1), fimAtendentes[(int)(id-1)]);
   pthread_exit(NULL);
 }
 void * caixa(void *argp)
 {
+
   printf("Caixa criado.\n");
   pthread_barrier_wait(&barreiraTodosProntos);
+  while(1)
+  {
+
+    printf("Caixa processa...\n");
+    pthread_mutex_lock(&mtxCaixa);
+    int k = 0;
+      for(int i = 0; i < 2; i++)
+      {
+        if(fimAtendentes[i] == 0)
+        {
+          printf("fimAtendentes -> %d, %d\n", (i+1), fimAtendentes[i]);
+          k = 1;
+          break;
+        }
+      }
+      if(k == 0)
+      {
+        break;
+      }
+
+    while(tamanhoListaCaixa == 0)
+    {
+      printf("Caixa esperando Atendente, tamanhodaLista = %i\n", tamanhoListaCaixa);
+      pthread_cond_wait(&condCaixa, &mtxCaixa);
+
+    }
+
+      Pedido * aux = popLista(&listaCaixa);
+    /*while(aux != NULL)
+    {*/
+      aux = popLista(&listaCaixa);
+    //}
+
+    pthread_mutex_unlock(&mtxCaixa);
+
+
+
+
+  }
 
   pthread_exit(NULL);
 }
@@ -63,8 +113,12 @@ void inicializa_lanches(FILE * arq_ofertas)
 void cria_threads(int nthread)
 {
   pthread_barrier_init(&barreiraTodosProntos,NULL,(nthread+1));
+  pthread_cond_init(&condCaixa, NULL);
   int rc;
   pthread_t threads[nthread+1];
+  int vet[nthread];
+  for(int j = 0; j < nthread; j++) vet[j] = 0;
+  fimAtendentes = vet;
 
   rc = pthread_create(&threads[nthread], NULL, (void *) caixa, NULL);
   if(rc != 0)
@@ -81,10 +135,12 @@ void cria_threads(int nthread)
     //printf("%i\n", i);
     rc = pthread_join(threads[i], NULL);
   }
+  pthread_barrier_destroy(&barreiraTodosProntos);
+
   //printf("Crio3u?");
 
   //printf("Criou?");
-  pthread_barrier_destroy(&barreiraTodosProntos);
+
 }
 int main(int argc, char *argv[])
 {
@@ -103,11 +159,18 @@ int main(int argc, char *argv[])
   printf("--------------------THREADS--------------------\n");
   cria_threads(nthread);
   printf("-----------------------------------------------\n");
-  printf("-----------------Estoque Inicio----------------\n");
+  printf("--------------------Lista de Pedidos Sucedidos--------------------\n");
+  printListCaixa(listaCaixa);
+  printf("------------------------------------------------------------------\n");
+  printf("-----------------Estoque Inicio-------------------------------\n");
   printList(listaOfertas, LISTA_INICIO);
   printf("-----------------------------------------------\n");
   printf("-----------------Estoque Final-----------------\n");
   printList(listaOfertas, LISTA_FIM);
   printf("-----------------------------------------------\n");
-  printListCaixa(listaCaixa);
+  pthread_cond_destroy(&condCaixa);
+  pthread_mutex_destroy(&mtxCaixa);
+  pthread_mutex_destroy(&mtxEstoque);
+
+
 }
