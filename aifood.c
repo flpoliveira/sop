@@ -1,5 +1,7 @@
 #include "ESTRUTURAS.h"
 #include <pthread.h>
+#define fmtfinanc "%9ld   %7u   %10u\n"
+#define fmtestoque "%-15s   %7u   %8u\n"
 
 char auxNomeArquivo[100];
 pthread_barrier_t barreiraTodosProntos;
@@ -25,7 +27,7 @@ void * atendente(void *argp)
       exit(EXIT_FAILURE);
   }
   Lanche sanduiche;
-  printf("Atendente %ld criado.\n", (long) argp );
+  //printf("Atendente %ld criado.\n", (long) argp );
   pthread_barrier_wait(&barreiraTodosProntos); // Espera as demais
   while(fscanf(arq, "%s %u", sanduiche.nome, &sanduiche.quantidade) != EOF)
   {
@@ -33,12 +35,16 @@ void * atendente(void *argp)
     pthread_mutex_lock(&mtxEstoque);
     int aux = eh_possivel_processar_pedido(listaOfertas, sanduiche.nome, sanduiche.quantidade);
     if(aux == NOME_NAO_ENCONTRADO)
-      printf("O Atendente %ld nao encontrou lanche '%s' no estoque, pedido cancelado.\n", id, sanduiche.nome);
+    {
+      //printf("O Atendente %ld nao encontrou lanche '%s' no estoque, pedido cancelado.\n", id, sanduiche.nome);
+    }
     else if(aux == QUANTIDADE_INSUFICIENTE)
-      printf("O Atendente %ld encontrou o lanche '%s', porem a quantidade em estoque eh insuficiente, pedido cancelado.\n", id, sanduiche.nome);
+    {
+      //printf("O Atendente %ld encontrou o lanche '%s', porem a quantidade em estoque eh insuficiente, pedido cancelado.\n", id, sanduiche.nome);
+    }
     else if(aux == EH_POSSIVEL)
     {
-      printf("O Atendente %ld encontrou o lanche '%s' e a quantidade em estoque eh suficiente, pedido sendo atendido.\n", id, sanduiche.nome);
+      //printf("O Atendente %ld encontrou o lanche '%s' e a quantidade em estoque eh suficiente, pedido sendo atendido.\n", id, sanduiche.nome);
 
         unsigned int valor = retira_lanches_estoque(listaOfertas, sanduiche.nome , sanduiche.quantidade);
         pthread_mutex_lock(&mtxCaixa);
@@ -56,15 +62,15 @@ void * atendente(void *argp)
 }
 void * caixa(void *argp)
 {
-  printf("Caixa criado.\n");
+  //printf("Caixa criado.\n");
   pthread_barrier_wait(&barreiraTodosProntos);
   while(fimAtendentes > 0)
   {
-    printf("Caixa processa... fimAtendentes = %d\n", fimAtendentes);
+    //printf("Caixa processa... fimAtendentes = %d\n", fimAtendentes);
     pthread_mutex_lock(&mtxCaixa);
     if(tamanhoListaCaixa == 0)
     {
-      printf("Caixa esperando Atendente, tamanhodaLista = %i\n", tamanhoListaCaixa);
+      //printf("Caixa esperando Atendente, tamanhodaLista = %i\n", tamanhoListaCaixa);
       pthread_cond_wait(&condCaixa, &mtxCaixa);
     }
 
@@ -123,6 +129,39 @@ void cria_threads(int nthread)
   //printf("Criou?");
 
 }
+void imprime_relatorio_financeiro(struct NoCaixa * lista)
+{
+  printf("***** Relatorio financeiro *****\n\n");
+  printf("Atendente   Pedidos   Valor (R$)\n");
+  while(lista != NULL)
+  {
+    printf(fmtfinanc, lista->pedido.idAtendente, lista->pedido.quantidade, lista->pedido.preco);
+    lista = lista->next;
+  }
+}
+void imprime_valor_total(struct NoCaixa * lista)
+{
+  unsigned int i  = 0;
+  while(lista != NULL)
+  {
+    i+= lista->pedido.preco;
+    lista = lista->next;
+  }
+  printf("Receita total: R$ %u\n\n", i);
+
+}
+
+void imprime_estoque(struct No * lista)
+{
+  printf("***** Estoque de lanches *****\n\n");
+  printf("Lanche            Inicial      Final\n");
+  while(lista != NULL)
+  {
+    printf(fmtestoque, lista->sanduiche.nome, lista->sanduicheAntes.quantidade, lista->sanduiche.quantidade);
+    lista = lista->next;
+  }
+}
+
 int main(int argc, char *argv[])
 {
   int nthread = atoi(argv[1]);
@@ -137,21 +176,24 @@ int main(int argc, char *argv[])
   }
   inicializa_lanches(arq);
 
-  printf("--------------------THREADS--------------------\n");
+//  printf("--------------------THREADS--------------------\n");
   cria_threads(nthread);
-  printf("-----------------------------------------------\n");
-  printf("--------------------Lista de Pedidos Que Deu Ruim--------------------\n");
-  printListCaixa(listaCaixa);
-  printf("------------------------------------------------------------------\n");
-  printf("--------------------Lista de Pedidos Processados--------------------\n");
-  printListCaixa(listaPedidosProcessados);
-  printf("------------------------------------------------------------------\n");
-  printf("-----------------Estoque Inicio-------------------------------\n");
-  printList(listaOfertas, LISTA_INICIO);
-  printf("-----------------------------------------------\n");
-  printf("-----------------Estoque Final-----------------\n");
-  printList(listaOfertas, LISTA_FIM);
-  printf("-----------------------------------------------\n");
+  imprime_relatorio_financeiro(listaPedidosProcessados);
+  imprime_valor_total(listaPedidosProcessados);
+  imprime_estoque(listaOfertas);
+//  printf("-----------------------------------------------\n");
+  //printf("--------------------Lista de Pedidos Que Deu Ruim--------------------\n");
+  //printListCaixa(listaCaixa);
+  //printf("------------------------------------------------------------------\n");
+  //printf("--------------------Lista de Pedidos Processados--------------------\n");
+  //printListCaixa(listaPedidosProcessados);
+  //printf("------------------------------------------------------------------\n");
+  //printf("-----------------Estoque Inicio-------------------------------\n");
+//  printList(listaOfertas, LISTA_INICIO);
+  //printf("-----------------------------------------------\n");
+  //printf("-----------------Estoque Final-----------------\n");
+  //printList(listaOfertas, LISTA_FIM);
+  //printf("-----------------------------------------------\n");
   pthread_cond_destroy(&condCaixa);
   pthread_mutex_destroy(&mtxCaixa);
   pthread_mutex_destroy(&mtxEstoque);
