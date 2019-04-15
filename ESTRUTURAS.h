@@ -7,6 +7,7 @@
 #define EH_POSSIVEL 1
 #define LISTA_INICIO 1
 #define LISTA_FIM 2
+#define LISTACAIXA 1
 
 typedef struct {
   char nome[100];
@@ -48,7 +49,7 @@ void printList(struct No * node, int x);
 void deleteNode(struct No** head_ref, struct No * del);
 int eh_possivel_processar_pedido(struct No* node, char nomeLanche[], unsigned int quantidade);
 unsigned int retira_lanches_estoque(struct No * node, char nomeLanche[],unsigned int quantidade);
-void appendCaixa(struct NoCaixa** head_ref, long idAtendente, unsigned int valor);
+void appendCaixa(struct NoCaixa** head_ref, long idAtendente, unsigned int valor, int x);
 void printListCaixa(struct NoCaixa *node);
 Pedido * popLista(struct NoCaixa ** head_ref);
 int buscaListaIncrementaValor(struct NoCaixa * node, Pedido x);
@@ -177,10 +178,12 @@ unsigned int retira_lanches_estoque(struct No * node, char nomeLanche[] , unsign
   return -1;
 }
 
-void appendCaixa(struct NoCaixa** head_ref, long idAtendente, unsigned int valor)
+void appendCaixa(struct NoCaixa** head_ref, long idAtendente, unsigned int valor, int x)
 {
-    tamanhoListaCaixa++;
+
     Pedido aux;
+    if(x == LISTACAIXA)
+      tamanhoListaCaixa++;
     aux.idAtendente = idAtendente;
     aux.preco = valor;
     aux.quantidade = 1;
@@ -209,6 +212,7 @@ void appendCaixa(struct NoCaixa** head_ref, long idAtendente, unsigned int valor
 
     /* 6. Change the next of last node */
     last->next = new_node;
+
     return;
 }
 
@@ -228,13 +232,13 @@ Pedido * popLista(struct NoCaixa ** head_ref)
   Pedido * aux = NULL;
   if(*head_ref != NULL)
   {
-    tamanhoListaCaixa--;
     struct NoCaixa* current = *head_ref;
 
     aux = malloc(sizeof(Pedido));
     *aux = current->pedido;
 
     *head_ref = current->next;   // Change head
+    tamanhoListaCaixa--;
     free(current);
   }
 

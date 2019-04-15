@@ -48,23 +48,21 @@ void * atendente(void *argp)
 
         unsigned int valor = retira_lanches_estoque(listaOfertas, sanduiche.nome , sanduiche.quantidade);
         pthread_mutex_lock(&mtxCaixa);
-        appendCaixa(&listaCaixa, id, valor);
+        appendCaixa(&listaCaixa, id, valor, 1);
         pthread_cond_signal(&condCaixa);
         pthread_mutex_unlock(&mtxCaixa);
 
     }
     pthread_mutex_unlock(&mtxEstoque);
   }
-  pthread_mutex_lock(&mtxCaixa);
   fimAtendentes--;
-  pthread_mutex_unlock(&mtxCaixa);
   pthread_exit(NULL);
 }
 void * caixa(void *argp)
 {
   //printf("Caixa criado.\n");
   pthread_barrier_wait(&barreiraTodosProntos);
-  while(fimAtendentes > 0)
+  while(fimAtendentes > 0 || tamanhoListaCaixa > 0)
   {
     //printf("Caixa processa... fimAtendentes = %d\n", fimAtendentes);
     pthread_mutex_lock(&mtxCaixa);
@@ -77,18 +75,16 @@ void * caixa(void *argp)
       Pedido * aux = popLista(&listaCaixa);
       while(aux != NULL)
       {
-
         if(buscaListaIncrementaValor(listaPedidosProcessados, *aux) == 0)
         {
-          appendCaixa(&listaPedidosProcessados, aux->idAtendente, aux->preco);
+          appendCaixa(&listaPedidosProcessados, aux->idAtendente, aux->preco, 0);
 
         }
         aux = popLista(&listaCaixa);
-
-
       }
     pthread_mutex_unlock(&mtxCaixa);
   }
+  printf("tamanhoListaCaixa -> %d\n", tamanhoListaCaixa);
   pthread_exit(NULL);
 }
 void inicializa_lanches(FILE * arq_ofertas)
