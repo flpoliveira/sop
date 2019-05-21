@@ -21,6 +21,19 @@ int main(int argc, char *argv[]){
 	}
 	else
 		diretorio = opendir(nomeDiretorio);
+	if(diretorio == NULL)
+	{
+		if(errno == 2)
+			printf("Diretorio inexistente ou não encontrado.\n");
+		else
+		{
+			printf("Um erro foi encontrado:\n");
+			printf("#%d - %s\n", errno, strerror(errno));
+		}
+
+
+		return 0;
+	}
 	struct dirent * estruturaDiretorio;
 	printf("tipo    |tipo de arquivo    |Nome Arquivo\n");
 	printf("-----------------------------------------\n");
