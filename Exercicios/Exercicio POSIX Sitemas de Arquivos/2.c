@@ -35,11 +35,39 @@ int main(int argc, char *argv[]){
 		return 0;
 	}
 	struct dirent * estruturaDiretorio;
-	printf("tipo    |tipo de arquivo    |Nome Arquivo\n");
-	printf("-----------------------------------------\n");
+	printf("tipo    |tipo de arquivo                       |Nome Arquivo\n");
+	printf("------------------------------------------------------------\n");
 	while(estruturaDiretorio = readdir(diretorio))
 	{
-		printf("%7u |%19d|%s\n", estruturaDiretorio->d_type,50,estruturaDiretorio->d_name);
+		char tipo[40];
+		switch(estruturaDiretorio->d_type)
+		{
+			case DT_BLK:
+				strcpy(tipo, "This is a block device.");
+				break;
+			case DT_CHR:
+				strcpy(tipo, "This is a character device.");
+				break;
+			case DT_DIR:
+				strcpy(tipo, "This is a directory.");
+				break;
+			case DT_FIFO:
+				strcpy(tipo, "This is a named pipe (FIFO).");
+				break;
+			case DT_LNK:
+				strcpy(tipo, "This is a symbolic link.");
+				break;
+			case DT_REG:
+				strcpy(tipo, "This is a regular file.");
+				break;
+			case DT_SOCK:
+				strcpy(tipo, "This is a UNIX domain socket.");
+				break;
+			default:
+				strcpy(tipo, "The file type could not be determined.");
+				break;
+		}
+		printf("%7u |%38s|%s\n", estruturaDiretorio->d_type,tipo,estruturaDiretorio->d_name);
 	}
 	closedir(diretorio);
 
