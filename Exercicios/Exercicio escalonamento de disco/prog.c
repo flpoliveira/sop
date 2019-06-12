@@ -28,36 +28,28 @@ void append(struct No ** cabeca, int blocoInicial, int nBlocos, char operacao)
 	}
 	else if((*cabeca)->blocoInicial >= new_node->blocoInicial)
 	{
-		if((*cabeca)->operacao == new_node->operacao && new_node->operacao == 'r')
-		{
-			if((new_node->blocoInicial + new_node->nBlocos) >= (*cabeca)->blocoInicial && (*cabeca)->nBlocos + new_node->nBlocos < 64)
-			{
-				(*cabeca)->blocoInicial = new_node->blocoInicial;
-				(*cabeca)->nBlocos = (*cabeca)->nBlocos + new_node->nBlocos;
-			}
-
-		}
-		else if((*cabeca)->operacao == new_node->operacao && new_node->operacao == 'w')
-		{
-			if(new_node->blocoInicial + new_node->nBlocos > (*cabeca)->blocoInicial && (*cabeca)->nBlocos + new_node->nBlocos < 64)
-			{
-				(*cabeca)->blocoInicial = new_node->blocoInicial;
-				(*cabeca)->nBlocos = (*cabeca)->nBlocos + new_node->nBlocos;
-			}
-		}
-		else
-		{
+		// if((*cabeca)->operacao == new_node->operacao && new_node->operacao == 'r')
+		// {
+		// 	if((new_node->blocoInicial + new_node->nBlocos) >= (*cabeca)->blocoInicial && (*cabeca)->nBlocos + ((*cabeca)->blocoInicial - new_node->blocoInicial) < 64)
+		// 	{
+		// 		(*cabeca)->nBlocos = (*cabeca)->nBlocos + ((*cabeca)->blocoInicial - new_node->blocoInicial) ;
+		// 		(*cabeca)->blocoInicial = new_node->blocoInicial;
+		// 	}
+		//
+		// }
+		// else
+		// {
 			new_node->prox = *cabeca;
 			new_node->prox->antes = new_node;
 			*cabeca = new_node;
-		}
+		//}
 
 
 	}
 	else
 	{
-		current = *cabeca;
-		while(current->prox != NULL && current->prox->blocoInicial < new_node->blocoInicial)
+			current = *cabeca;
+			while(current->prox != NULL && current->prox->blocoInicial < new_node->blocoInicial)
 			current = current->prox;
 
 			new_node->prox = current->prox;
@@ -70,6 +62,59 @@ void append(struct No ** cabeca, int blocoInicial, int nBlocos, char operacao)
 
 
 	return;
+
+}
+
+void blockUnionR(struct No ** head)
+{
+	int k;
+	struct No * current = *head;
+	while(current->antes != NULL)
+		current = current->antes;
+	while(current->prox != NULL)
+	{
+		k = current->prox->blocoInicial + current->prox->nBlocos - current->blocoInicial;
+
+		if(current->blocoInicial + current->nBlocos >= current->prox->blocoInicial && k < 64)
+		{
+			// printf("%d\n", k);
+			// 	printf("<<%d %d %c\n", current->blocoInicial, current->nBlocos, current->operacao);
+			// 	printf("--%d %d %c\n", current->prox->blocoInicial, current->prox->nBlocos, current->prox->operacao);
+				current->nBlocos = k;
+
+				//struct No * aux = current->prox;
+				current->prox = current->prox->prox;
+				//free(aux);
+				//printf(">>%d %d %c\n", current->blocoInicial, current->nBlocos, current->operacao);
+		}
+		else
+			current = current->prox;
+	}
+}
+
+void blockUnionW(struct No ** head)
+{
+	int k;
+	struct No * current = *head;
+	while(current->antes != NULL)
+		current = current->antes;
+	while(current->prox != NULL)
+	{
+		k = current->prox->blocoInicial + current->prox->nBlocos - current->blocoInicial;
+		if(current->blocoInicial + current->nBlocos == current->prox->blocoInicial && k < 64)
+		{
+				//printf("<<%d %d %c\n", current->blocoInicial, current->nBlocos, current->operacao);
+				//printf("--%d %d %c\n", current->prox->blocoInicial, current->prox->nBlocos, current->prox->operacao);
+				current->nBlocos = k;
+
+				//struct No * aux = current->prox;
+				current->prox = current->prox->prox;
+				//free(aux);
+				//printf(">>%d %d %c\n", current->blocoInicial, current->nBlocos, current->operacao);
+		}
+		else
+			current = current->prox;
+	}
 
 }
 
@@ -86,27 +131,66 @@ void printLista(struct No * lista)
 }
 
 
-
 int main(){
 
 	int blocoInicial, nBlocos;
 	char operacao, str[MAXLEN+1];
-	struct No * lista = NULL;
+	struct No * listaR = NULL;
+	struct No * listaW = NULL;
 	//FILE *arq = fopen("entrada.txt", "r");
-	/*while(fgets(str, MAXLEN, stdin) != NULL)
+	while(fgets(str, MAXLEN, stdin) != NULL)
 	{
 		sscanf(str, "%d %d %c\n", &blocoInicial, &nBlocos, &operacao);
-		append(&lista, blocoInicial, nBlocos, operacao);
+		if(operacao == 'r')
+			append(&listaR, blocoInicial, nBlocos, operacao);
+		else
+			append(&listaW, blocoInicial, nBlocos, operacao);
 	}
-	*/
 
-	while(scanf("%d %d %c", &blocoInicial, &nBlocos, &operacao) != EOF)
+
+	// while(scanf("%d %d %c", &blocoInicial, &nBlocos, &operacao) != EOF)
+	// {
+	// 	if(operacao == 'r')
+	// 		append(&listaR, blocoInicial, nBlocos, operacao);
+	// 	else
+	// 		append(&listaW, blocoInicial, nBlocos, operacao);
+	//
+	// }
+	struct No * heuristica = NULL;
+	if(listaW != NULL)
 	{
-		append(&lista, blocoInicial, nBlocos, operacao);
+		blockUnionW(&listaW);
+		while(listaW->antes != NULL)
+			listaW = listaW->antes;
 	}
+	if(listaR != NULL)
+	{
+		blockUnionR(&listaR);
+		while(listaR->antes != NULL)
+			listaR = listaR->antes;
+	}
+
+
+
+	while(listaW != NULL)
+	{
+		append(&heuristica, listaW->blocoInicial, listaW->nBlocos, listaW->operacao);
+		listaW = listaW->prox;
+	}
+	while(listaR != NULL)
+	{
+		append(&heuristica, listaR->blocoInicial, listaR->nBlocos, listaR->operacao);
+		listaR = listaR->prox;
+	}
+
+	// printLista(listaW);
+	// printLista(listaR);
+	printf("Fila:\n");
+	if(heuristica != NULL)
+		printLista(heuristica);
+
 	//printf("%d %d %c\n", lista->blocoInicial, lista->nBlocos, lista->operacao);
 	//ordernarLista(lista);
-	printLista(lista);
 
 
 	return 0;
