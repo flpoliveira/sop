@@ -2,6 +2,8 @@
 #include<stdlib.h>
 #define MAXLEN 30
 
+//CODIGO DESENVOLVIDO POR FILIPE DA SILVA E ANDRE FERREIRA
+
 struct No{
 	int blocoInicial, nBlocos;
 	char operacao;
